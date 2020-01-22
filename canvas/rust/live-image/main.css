@@ -1,0 +1,10 @@
+.main-canvas {
+    width: 200px;
+    height: 200px;
+}
+
+.main-canvas__wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
