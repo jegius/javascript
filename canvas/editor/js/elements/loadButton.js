@@ -1,4 +1,4 @@
-import {elt} from "../utils";
+import {elt, startLoad} from "../utils";
 
 export default class LoadButton {
     constructor(_, {dispatch}) {

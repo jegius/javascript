@@ -1,18 +1,17 @@
 {
-  "name": "game",
-  "version": "1.0.0",
+  "name": "site-client",
+  "version": "0.0.0",
   "description": "",
-  "private": true,
+  "main": "src",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack"
   },
   "author": "",
   "license": "ISC",
+  "dependencies": {},
   "devDependencies": {
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
-  },
-  "dependencies": {
-    "angular8-yandex-maps": "^1.10.3"
   }
 }
