@@ -1,11 +1,9 @@
 const {createServer} = require('http');
 const Router = require('./router');
 const ecstatic = require('ecstatic');
-
+const {defaultHeaders} = require("./varribles");
 const router = new Router();
-const defaultHeader = {
-    'Content-Type': 'text/plain'
-};
+
 const talkPath = /^\/talks\/([^\/]+)$/;
 
 module.exports = class SkillShareServer {
@@ -14,7 +12,10 @@ module.exports = class SkillShareServer {
         this.version = 0;
         this.waiting = [];
 
-        let fileServer = ecstatic({root: './public'});
+        let fileServer = ecstatic({root: './public'}, {
+            headers: defaultHeaders
+        });
+
         this.server = createServer((request, response) => {
             let resolved = router.resolve(this, request);
 
@@ -25,10 +26,10 @@ module.exports = class SkillShareServer {
                     }
                     return {body: String(error), status: 500};
                 }).then(({
-                    body,
-                    status = 200,
-                    headers = defaultHeader
-                }) => {
+                             body,
+                             status = 200,
+                             headers = defaultHeaders
+                         }) => {
                     response.writeHead(status, headers);
                     response.end(body);
                 });
@@ -52,7 +53,7 @@ router.add('GET', talkPath, async (server, title) => {
     if (title in server.talks) {
         return {
             body: JSON.stringify(server.talks[title]),
-            headers: {'Content-Type': 'application/json'}
+            headers: defaultHeaders
         }
     } else {
         return {
@@ -62,44 +63,50 @@ router.add('GET', talkPath, async (server, title) => {
     }
 });
 
+router.add('GET', /\//, async (server, title) => {
+    return {
+        status: 200
+    }
+});
+
 router.add('DELETE', talkPath, async (server, title) => {
-   if (title in server.talks) {
-       delete server.talks[title];
-       server.updated()
-   }
-   return {
-       status: 204
-   }
+    if (title in server.talks) {
+        delete server.talks[title];
+        server.updated()
+    }
+    return {
+        status: 204
+    }
 });
 
 router.add('PUT', talkPath, async (server, title, request) => {
-   let requestBody = await readStream(request);
-   let talk;
+    let requestBody = await readStream(request);
+    let talk;
 
-   try {
-       talk = JSON.parse(requestBody);
-   } catch (_) {
-       return {
-           status: 400,
-           body: 'Invalid JSON'
-       }
-   }
-   if (!talk || typeof talk.presenter !== 'string' || typeof talk.summary !== 'string') {
-       return {
-           status: 400,
-           body: 'Bad talk data'
-       }
-   }
-   server.talks[title] = {
-       title,
-       presenter: talk.presenter,
-       summary: talk.summary,
-       comments: []
-   };
-   server.updated();
-   return {
-       status: 204
-   }
+    try {
+        talk = JSON.parse(requestBody);
+    } catch (_) {
+        return {
+            status: 400,
+            body: 'Invalid JSON'
+        }
+    }
+    if (!talk || typeof talk.presenter !== 'string' || typeof talk.summary !== 'string') {
+        return {
+            status: 400,
+            body: 'Bad talk data'
+        }
+    }
+    server.talks[title] = {
+        title,
+        presenter: talk.presenter,
+        summary: talk.summary,
+        comments: []
+    };
+    server.updated();
+    return {
+        status: 204
+    }
 });
 
 router.add('POST', /^\/talks\/([^\/]+)\/comments$/, async (server, title, request) => {
@@ -138,7 +145,7 @@ router.add('GET', /^\/talks$/, async (server, request) => {
     let tag = /"(.*)"/.exec(request.headers['if-none-match']);
     let wait = /\bwait=(\d+)/.exec(request.headers['prefer']);
 
-    if (!tag || tag[1] !== server.version){
+    if (!tag || tag[1] !== server.version) {
         return server.talkResponse();
     } else if (!wait) {
         return {

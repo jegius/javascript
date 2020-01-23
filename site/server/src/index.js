@@ -1,4 +1,5 @@
 const SkillShareServer = require('./objects/slillShareServer');
+const {defaultHeaders} = require("./objects/varribles");
 
 new SkillShareServer(Object.create(null)).start(8000);
 
@@ -11,6 +12,7 @@ SkillShareServer.prototype.talkResponse = function () {
     return {
         body: JSON.stringify(talks),
         headers: {
+            ...defaultHeaders,
             'Content-Type': 'application/json',
             'ETag': `"${this.version}"`
         }
